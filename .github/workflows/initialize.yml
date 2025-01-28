@@ -1,17 +1,18 @@
 name: Initialize Repository
 on:
-  repository_dispatch:
-    types: [repository_created]
+  - push
 
 jobs:
   initialize:
     runs-on: ubuntu-latest
-    if: github.event.action == 'repository_created'
-
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
+      - name: Get parent hash
+        run: echo "PARENT_COUNT=$(git rev-parse HEAD^@ | wc -l)" >> $GITHUB_ENV
       - name: Update project files
+        if: env.PARENT_COUNT == 0
         run: |
           REPO_NAME=${GITHUB_REPOSITORY#*/}
           ORGANIZATION=${GITHUB_REPOSITORY%/*}
@@ -35,6 +36,7 @@ jobs:
           sed -i "s/{COPYRIGHT_HOLDER}/$ORGANIZATION/g" LICENSE
 
       - name: Commit changes
+        if: env.PARENT_COUNT == 0
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
