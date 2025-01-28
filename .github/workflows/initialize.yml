@@ -38,8 +38,10 @@ jobs:
       - name: Commit changes
         if: env.PARENT_COUNT == 0
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add -A
           git commit -m "Initialize repository from template"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
