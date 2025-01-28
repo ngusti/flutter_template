@@ -1,0 +1,4 @@
+* text=auto
+lib/**/*.freezed.dart linguist-generated=true
+lib/**/*.realm.dart linguist-generated=true
+lib/**/*.g.dart linguist-generated=true

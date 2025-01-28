@@ -1,0 +1,42 @@
+name: Initialize Repository
+on:
+  create
+
+jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    if: github.event.ref_type == 'repository'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update project files
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY#*/}
+          ORGANIZATION=${GITHUB_REPOSITORY%/*}
+          DESCRIPTION="${{ github.event.repository.description }}"
+          YEAR=$(date +%Y)
+
+          # Android設定の更新
+          sed -i "s/{ORGANIZATION}/${ORGANIZATION,,}/g" android/app/build.gradle
+          sed -i "s/{REPO_NAME}/$REPO_NAME/g" android/app/build.gradle
+
+          # Flutterプロジェクト設定の更新
+          sed -i "s/{REPO_NAME}/$REPO_NAME/g" pubspec.yaml
+          sed -i "s/{DESCRIPTION}/$DESCRIPTION/g" pubspec.yaml
+
+          # ドキュメントの更新
+          echo -e "$REPO_NAME\n" > README.md
+          echo -e "$DESCRIPTION\n" >> README.md
+
+          # LICENSEファイルの更新
+          sed -i "s/{YEAR}/$YEAR/g" LICENSE
+          sed -i "s/{COPYRIGHT_HOLDER}/$ORGANIZATION/g" LICENSE
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Initialize repository from template"
+          git push
