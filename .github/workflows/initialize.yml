@@ -1,14 +1,15 @@
 name: Initialize Repository
 on:
-  create
+  repository_dispatch:
+    types: [repository_created]
 
 jobs:
   initialize:
     runs-on: ubuntu-latest
-    if: github.event.ref_type == 'repository'
+    if: github.event.action == 'repository_created'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Update project files
         run: |
