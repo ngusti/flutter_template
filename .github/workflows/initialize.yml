@@ -1,18 +1,16 @@
 name: Initialize Repository
 on:
-  - push
+  create:
 
 jobs:
   initialize:
+    if: ${{ !github.event.repository.is_template }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Get parent hash
-        run: echo "PARENT_COUNT=$(git rev-parse HEAD^@ | wc -l)" >> $GITHUB_ENV
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Update project files
-        if: env.PARENT_COUNT == 0
         run: |
           REPO_NAME=${GITHUB_REPOSITORY#*/}
           ORGANIZATION=${GITHUB_REPOSITORY%/*}
@@ -36,12 +34,12 @@ jobs:
           sed -i "s/{COPYRIGHT_HOLDER}/$ORGANIZATION/g" LICENSE
 
       - name: Commit changes
-        if: env.PARENT_COUNT == 0
         run: |
+          rm -f .github/workflows/initialize.yml
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add -A
           git commit -m "Initialize repository from template"
-          git push
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
